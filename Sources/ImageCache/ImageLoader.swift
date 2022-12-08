@@ -10,14 +10,11 @@ import UIKit
 public class ImageLoader: NSObject {
     public static let shared = ImageLoader(cache: ImageCache(), executeQueue: OperationQueue(), receiveQueue: .main)
     
-    private let cache: ImageCacheType
-    private let executeQueue: OperationQueue
-    private let receiveQueue: OperationQueue
-    private lazy var session: URLSession = {
-        let config = URLSessionConfiguration.default
-        let sess = URLSession(configuration: config, delegate: nil, delegateQueue: receiveQueue)
-        return sess
-    }()
+    private var cache: ImageCacheType
+    private var executeQueue: OperationQueue
+    private var receiveQueue: OperationQueue
+    
+    private var session: URLSession
     
     // Init
     public init(cache: ImageCacheType,
@@ -26,6 +23,30 @@ public class ImageLoader: NSObject {
         self.cache = cache
         self.executeQueue = executeQueue
         self.receiveQueue = receiveQueue
+        self.session = Self.regenerateSession(receiveQueue: receiveQueue)
+    }
+    
+    private static func regenerateSession(receiveQueue: OperationQueue) -> URLSession {
+        let config = URLSessionConfiguration.default
+        let session = URLSession(configuration: config, delegate: nil, delegateQueue: receiveQueue)
+        return session
+    }
+}
+
+// MARK: - public methods
+
+extension ImageLoader {
+    func config(cache: ImageCacheType,
+                executeQueue: OperationQueue,
+                receiveQueue: OperationQueue = .main) {
+        // Make sure the old operations will be canceled
+        self.executeQueue.cancelAllOperations()
+        
+        // Setup again
+        self.cache = cache
+        self.executeQueue = executeQueue
+        self.receiveQueue = receiveQueue
+        self.session = Self.regenerateSession(receiveQueue: receiveQueue)
     }
     
     // Load image
