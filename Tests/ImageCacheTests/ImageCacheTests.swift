@@ -5,7 +5,9 @@ final class ImageCacheTests: XCTestCase {
     var imageLoader: ImageLoader!
     
     override func setUpWithError() throws {
-        imageLoader = ImageLoader(cache: ImageCache())
+        let taskQueue = OperationQueue()
+        taskQueue.maxConcurrentOperationCount = 1
+        imageLoader = ImageLoader(cache: ImageCache(), executeQueue: taskQueue)
     }
     
     override func tearDownWithError() throws {
@@ -16,7 +18,11 @@ final class ImageCacheTests: XCTestCase {
         let waitExpectation = expectation(description: "Waiting")
         
         let imageUrls = [
+//            "https://api.github.com/users/hadley/repos",
+//            "http://ip-api.com/json",
+//            "https://api.github.com/repositories/19438/commits",
             "https://res.cloudinary.com/demo/basketball_shot.jpg",
+            "https://live.staticflickr.com/2912/13981352255_fc59cfdba2_b.jpg",
             "https://res.cloudinary.com/demo/image/upload/if_ar_gt_3:4_and_w_gt_300_and_h_gt_200,c_crop,w_300,h_200/sample.jpg"
         ]
         
@@ -40,7 +46,7 @@ final class ImageCacheTests: XCTestCase {
             }
         }
         
-        waitForExpectations(timeout: 5)
+        waitForExpectations(timeout: 8)
     }
 }
 

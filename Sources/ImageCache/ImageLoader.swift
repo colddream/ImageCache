@@ -7,20 +7,28 @@
 
 import UIKit
 
-public class ImageLoader {
-    public static let shared = ImageLoader(cache: ImageCache())
+public class ImageLoader: NSObject {
+    public static let shared = ImageLoader(cache: ImageCache(), executeQueue: OperationQueue(), receiveQueue: .main)
     
     private let cache: ImageCacheType
-    private lazy var backgroundQueue: OperationQueue = {
-        let queue = OperationQueue()
-        queue.maxConcurrentOperationCount = 5
-        return queue
+    private let executeQueue: OperationQueue
+    private let receiveQueue: OperationQueue
+    private lazy var session: URLSession = {
+        let config = URLSessionConfiguration.default
+        let sess = URLSession(configuration: config, delegate: nil, delegateQueue: receiveQueue)
+        return sess
     }()
     
-    public init(cache: ImageCacheType) {
+    // Init
+    public init(cache: ImageCacheType,
+                executeQueue: OperationQueue,
+                receiveQueue: OperationQueue = .main) {
         self.cache = cache
+        self.executeQueue = executeQueue
+        self.receiveQueue = receiveQueue
     }
     
+    // Load image
     public func loadImage(from url: URL,
                           completion: @escaping (Result<UIImage, Error>) -> Void) {
         if let image = cache[url] {
@@ -28,21 +36,21 @@ public class ImageLoader {
             return
         }
         
-        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, response, error in
+        let operation = DataTaskOperation(session: session, url: url) { data, response, error in
             if let error = error {
                 completion(.failure(error))
                 return
             }
-            
+
             if let data = data,
                 let image = UIImage(data: data) {
                 completion(.success(image))
                 return
             }
-            
+
             let error = CustomError(message: "Invalid Image Data")
             completion(.failure(error))
         }
-        task.resume()
+        executeQueue.addOperation(operation)
     }
 }
