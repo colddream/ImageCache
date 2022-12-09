@@ -12,6 +12,7 @@
 		961722482942DE4F00B6B953 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 961722462942DE4F00B6B953 /* Main.storyboard */; };
 		9617224A2942DE5000B6B953 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 961722492942DE5000B6B953 /* Assets.xcassets */; };
 		9617224D2942DE5000B6B953 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9617224B2942DE5000B6B953 /* LaunchScreen.storyboard */; };
+		961722562942E10300B6B953 /* ImageCache in Frameworks */ = {isa = PBXBuildFile; productRef = 961722552942E10300B6B953 /* ImageCache */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +30,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				961722562942E10300B6B953 /* ImageCache in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -40,6 +42,7 @@
 			children = (
 				9617223F2942DE4F00B6B953 /* Example-iOS */,
 				9617223E2942DE4F00B6B953 /* Products */,
+				961722542942E10300B6B953 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -64,6 +67,13 @@
 			path = "Example-iOS";
 			sourceTree = "<group>";
 		};
+		961722542942E10300B6B953 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -80,6 +90,9 @@
 			dependencies = (
 			);
 			name = "Example-iOS";
+			packageProductDependencies = (
+				961722552942E10300B6B953 /* ImageCache */,
+			);
 			productName = "Example-iOS";
 			productReference = 9617223D2942DE4F00B6B953 /* Example-iOS.app */;
 			productType = "com.apple.product-type.application";
@@ -356,6 +369,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		961722552942E10300B6B953 /* ImageCache */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ImageCache;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 961722352942DE4E00B6B953 /* Project object */;
 }
