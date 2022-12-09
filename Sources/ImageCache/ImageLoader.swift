@@ -13,7 +13,6 @@ public class ImageLoader: NSObject {
     private var cache: ImageCacheType
     private var executeQueue: OperationQueue
     private var receiveQueue: OperationQueue
-    
     private var session: URLSession
     
     // Init
@@ -36,7 +35,7 @@ public class ImageLoader: NSObject {
 // MARK: - public methods
 
 extension ImageLoader {
-    func config(cache: ImageCacheType,
+    public func config(cache: ImageCacheType,
                 executeQueue: OperationQueue,
                 receiveQueue: OperationQueue = .main) {
         // Make sure the old operations will be canceled
@@ -73,5 +72,9 @@ extension ImageLoader {
             completion(.failure(error))
         }
         executeQueue.addOperation(operation)
+    }
+    
+    public func removeCache() {
+        self.cache.removeCache()
     }
 }

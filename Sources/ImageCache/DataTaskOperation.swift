@@ -48,11 +48,15 @@ class DataTaskOperation: Operation {
     // MARK: - Override methods
     
     override func start() {
+        // At no time in your start method should you ever call super (https://developer.apple.com/documentation/foundation/nsoperation?language=objc#1661262)
+        super.start()
+        
         /*
          if the operation or queue got cancelled even
          before the operation has started, set the
          operation state to finished and return
          */
+        // Your start method should also check to see if the operation itself was cancelled before actually starting the task (https://developer.apple.com/documentation/foundation/nsoperation?language=objc#1661262)
         if self.isCancelled {
             state = .finished
             return

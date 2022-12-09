@@ -19,10 +19,16 @@ public protocol ImageCacheType: AnyObject {
 
 
 public class ImageCache {
-    struct Config {
+    public struct Config {
+        public static let defaultConfig = Config(countLimit: 100, memoryLimit: 1024 * 1024 * 100) // 100 MB
+        
         let countLimit: Int
         let memoryLimit: Int
-        static let defaultConfig = Config(countLimit: 100, memoryLimit: 1024 * 1024 * 100) // 100 MB
+        
+        public init(countLimit: Int, memoryLimit: Int) {
+            self.countLimit = countLimit
+            self.memoryLimit = memoryLimit
+        }
     }
     
     private lazy var imageCache: NSCache<AnyObject, AnyObject> = {
@@ -35,7 +41,7 @@ public class ImageCache {
     
     private let config: Config
     
-    init(config: Config = Config.defaultConfig) {
+    public init(config: Config = Config.defaultConfig) {
         self.config = config
     }
 }
