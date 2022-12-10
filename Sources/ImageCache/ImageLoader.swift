@@ -50,12 +50,19 @@ extension ImageLoader {
     
     // Load image
     public func loadImage(from url: URL,
+                          isLog: Bool = false,
                           completion: @escaping (Result<UIImage, Error>) -> Void) {
         if let image = cache[url] {
+            if isLog {
+                print("[ImageLoader] image from cache (\(url.absoluteString))")
+            }
             completion(.success(image))
             return
         }
         
+        if isLog {
+            print("[ImageLoader] Start get image from server (\(url.absoluteString))")
+        }
         let operation = DataTaskOperation(session: session, url: url) { data, response, error in
             if let error = error {
                 completion(.failure(error))
@@ -64,6 +71,11 @@ extension ImageLoader {
 
             if let data = data,
                 let image = UIImage(data: data) {
+                self.cache[url] = image
+                
+                if isLog {
+                    print("[ImageLoader] image from server (\(url.absoluteString))")
+                }
                 completion(.success(image))
                 return
             }

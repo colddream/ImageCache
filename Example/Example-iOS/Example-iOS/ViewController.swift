@@ -9,47 +9,53 @@ import UIKit
 import ImageCache
 
 class ViewController: UIViewController {
-
+    @IBOutlet weak var tableView: UITableView!
+    
+    private var movies: [Movie] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupImageCache()
-        testing()
-    }
-
-    private func setupImageCache() {
-        let taskQueue = OperationQueue()
-        taskQueue.maxConcurrentOperationCount = 1
-        let config = ImageCache.Config(countLimit: 100, memoryLimit: 100 * 1024 * 1024)
-        
-        ImageLoader.shared.config(cache: ImageCache(config: config),
-                                  executeQueue: taskQueue,
-                                  receiveQueue: .main)
-    }
-    
-    private func testing() {
-        let imageUrls = [
-//            "https://api.github.com/users/hadley/repos",
-//            "http://ip-api.com/json",
-            "https://api.github.com/repositories/19438/commits",
-            "https://res.cloudinary.com/demo/basketball_shot.jpg",
-            "https://live.staticflickr.com/2912/13981352255_fc59cfdba2_b.jpg",
-            "https://res.cloudinary.com/demo/image/upload/if_ar_gt_3:4_and_w_gt_300_and_h_gt_200,c_crop,w_300,h_200/sample.jpg"
-        ]
-        
-        var finishedCount = 0
-        for urlString in imageUrls {
-            ImageLoader.shared.loadImage(from: URL(string: urlString)!) { result in
-                print("Finished Load for: \(urlString)")
-                switch result {
-                case .success(let image):
-                    print("\(image)")
-                case .failure(let error):
-                    print("\(error.localizedDescription)")
-                }
-                
-                finishedCount += 1
-            }
-        }
+        configUI()
+        loadMovies()
     }
 }
 
+// MARK: - Helper methods
+
+extension ViewController {
+    private func configUI() {
+        tableView.delegate = self
+        tableView.dataSource = self
+    }
+    
+    private func loadMovies() {
+        let moviesUrl = Bundle.main.url(forResource: "Movies2", withExtension: "json")!
+        let data = try! Data(contentsOf: moviesUrl)
+        let movies = try! JSONDecoder().decode([Movie].self, from: data)
+        
+        print("Load movies.count: \(movies.count)")
+        
+        self.movies = movies
+        tableView.reloadData()
+    }
+}
+
+// MARK: - UITableViewDataSource, UITableViewDelegate
+
+extension ViewController: UITableViewDataSource, UITableViewDelegate {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return movies.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieCell
+        
+        cell.movie = movies[indexPath.row]
+        
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 160
+    }
+}
