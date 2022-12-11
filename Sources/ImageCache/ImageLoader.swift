@@ -6,17 +6,20 @@
 //
 
 import UIKit
+import Cache
 
 public class ImageLoader: NSObject {
-    public static let shared = ImageLoader(cache: ImageCache(), executeQueue: OperationQueue(), receiveQueue: .main)
+    public static let shared = ImageLoader(cache: Cache<URL, UIImage>(config: .init(countLimit: 100, memoryLimit: 50 * 1024 * 1024)),
+                                           executeQueue: OperationQueue(),
+                                           receiveQueue: .main)
     
-    private var cache: ImageCacheType
+    private var cache: any Cacheable<URL, UIImage>
     private var executeQueue: OperationQueue
     private var receiveQueue: OperationQueue
     private var session: URLSession
     
     // Init
-    public init(cache: ImageCacheType,
+    public init(cache: any Cacheable<URL, UIImage>,
                 executeQueue: OperationQueue,
                 receiveQueue: OperationQueue = .main) {
         self.cache = cache
@@ -35,7 +38,7 @@ public class ImageLoader: NSObject {
 // MARK: - public methods
 
 extension ImageLoader {
-    public func config(cache: ImageCacheType,
+    public func config(cache: any Cacheable<URL, UIImage>,
                 executeQueue: OperationQueue,
                 receiveQueue: OperationQueue = .main) {
         // Make sure the old operations will be canceled
@@ -87,6 +90,6 @@ extension ImageLoader {
     }
     
     public func removeCache() {
-        self.cache.removeCache()
+        self.cache.removeAll()
     }
 }

@@ -1,5 +1,6 @@
 import XCTest
 @testable import ImageCache
+import Cache
 
 final class ImageCacheTests: XCTestCase {
     var imageLoader: ImageLoader!
@@ -9,9 +10,7 @@ final class ImageCacheTests: XCTestCase {
         taskQueue.maxConcurrentOperationCount = 1
         
         imageLoader = ImageLoader.shared
-        
-        let config = ImageCache.Config(countLimit: 100, memoryLimit: 100 * 1024 * 1024)
-        imageLoader.config(cache: ImageCache(config: config),
+        imageLoader.config(cache: Cache(config: .init(countLimit: 100, memoryLimit: 100 * 1024 * 1024)),
                            executeQueue: taskQueue,
                            receiveQueue:.main)
     }

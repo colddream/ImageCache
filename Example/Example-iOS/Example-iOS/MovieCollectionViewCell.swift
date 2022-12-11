@@ -16,7 +16,7 @@ class MovieCollectionViewCell: UICollectionViewCell {
         didSet {
             titleLabel.text = movie?.title
             if let url = URL(string: movie?.images.first ?? "") {
-                ImageLoader.shared.loadImage(from: url) { result in
+                ImageLoader.shared.loadImage(from: url, isLog: true) { result in
                     switch result {
                     case let .success(image):
                         self.thumbView.image = image
