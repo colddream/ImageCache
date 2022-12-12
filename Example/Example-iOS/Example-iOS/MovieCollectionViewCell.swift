@@ -16,9 +16,15 @@ class MovieCollectionViewCell: UICollectionViewCell {
         didSet {
             titleLabel.text = movie?.title
             if let url = URL(string: movie?.images.first ?? "") {
-                ImageLoader.shared.loadImage(from: url, isLog: true) { result in
+                print("[Movie Cell] Start load image")
+                ImageLoader.shared.loadImage(from: url, isLog: true) { [weak self] result in
+                    guard let self = self else {
+                        return
+                    }
+                    
                     switch result {
                     case let .success(image):
+                        print("[Movie Cell] Finish load image: \(image) - \(self)")
                         self.thumbView.image = image
                     case .failure:
                         self.thumbView.image = nil

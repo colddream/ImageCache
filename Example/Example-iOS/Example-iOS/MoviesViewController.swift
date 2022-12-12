@@ -17,6 +17,11 @@ class MoviesViewController: UIViewController {
         configUI()
         loadMovies()
     }
+    
+    @IBAction func pressTest(_ sender: Any) {
+        movies.removeAll()
+        collectionView.reloadData()
+    }
 }
 
 // MARK: - Helper methods

@@ -25,16 +25,17 @@ final class ImageCacheTests: XCTestCase {
         let imageUrls = [
 //            "https://api.github.com/users/hadley/repos",
 //            "http://ip-api.com/json",
-            "https://api.github.com/repositories/19438/commits",
+//            "https://api.github.com/repositories/19438/commits",
             "https://res.cloudinary.com/demo/basketball_shot.jpg",
-            "https://live.staticflickr.com/2912/13981352255_fc59cfdba2_b.jpg",
-            "https://res.cloudinary.com/demo/image/upload/if_ar_gt_3:4_and_w_gt_300_and_h_gt_200,c_crop,w_300,h_200/sample.jpg"
+            "https://res.cloudinary.com/demo/basketball_shot.jpg",
+//            "https://live.staticflickr.com/2912/13981352255_fc59cfdba2_b.jpg",
+//            "https://res.cloudinary.com/demo/image/upload/if_ar_gt_3:4_and_w_gt_300_and_h_gt_200,c_crop,w_300,h_200/sample.jpg"
         ]
         
         var finishedCount = 0
         for urlString in imageUrls {
-            imageLoader.loadImage(from: URL(string: urlString)!) { result in
-                print("Finished Load for: \(urlString)")
+            imageLoader.loadImage(from: URL(string: urlString)!, isLog: true) { result in
+                // print("Finished Load for: \(urlString)")
                 switch result {
                 case .success(let image):
                     print("\(image)")
@@ -46,11 +47,12 @@ final class ImageCacheTests: XCTestCase {
                 
                 // Last url
                 if finishedCount == imageUrls.count {
-                    waitExpectation.fulfill()
+//                    try? self.testImageLoader()
+                     waitExpectation.fulfill()
                 }
             }
         }
         
-        waitForExpectations(timeout: 8)
+        waitForExpectations(timeout: 80)
     }
 }

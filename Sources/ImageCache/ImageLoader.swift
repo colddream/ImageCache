@@ -8,6 +8,8 @@
 import UIKit
 import Cache
 
+public typealias ImageLoaderHandler = (Result<UIImage, Error>) -> Void
+
 public class ImageLoader: NSObject {
     public static let shared = ImageLoader(cache: Cache<URL, UIImage>(config: .init(countLimit: 100, memoryLimit: 50 * 1024 * 1024)),
                                            executeQueue: OperationQueue(),
@@ -17,6 +19,8 @@ public class ImageLoader: NSObject {
     private var executeQueue: OperationQueue
     private var receiveQueue: OperationQueue
     private var session: URLSession
+    
+    private var pendingHandlers: [URL: [ImageLoaderHandler]] = [:]
     
     // Init
     public init(cache: any Cacheable<URL, UIImage>,
@@ -54,42 +58,70 @@ extension ImageLoader {
     // Load image
     public func loadImage(from url: URL,
                           isLog: Bool = false,
-                          completion: @escaping (Result<UIImage, Error>) -> Void) {
+                          completion: @escaping ImageLoaderHandler) {
         if let image = cache[url] {
-            if isLog {
-                print("[ImageLoader] image from cache (\(url.absoluteString))")
-            }
+            logPrint("[ImageLoader] image from cache (\(url.absoluteString))", isLog: isLog)
             completion(.success(image))
             return
         }
         
-        if isLog {
-            print("[ImageLoader] Start get image from server (\(url.absoluteString))")
+        // Add handler to pending handlers
+        if pendingHandlers[url] != nil {
+            pendingHandlers[url]?.append(completion)
+        } else {
+            pendingHandlers[url] = [completion]
         }
-        let operation = DataTaskOperation(session: session, url: url) { data, response, error in
+
+        // If pendingHandlers.count > 1 => mean we are loading this url before => just waiting it loading done
+        if pendingHandlers[url]!.count > 1 {
+            logPrint("[ImageLoader] waiting previous loading image", isLog: isLog)
+            return
+        }
+        
+        logPrint("[ImageLoader] Start get image from server (\(url.absoluteString))", isLog: isLog)
+        let operation = DataTaskOperation(session: session, url: url) { [weak self] data, response, error in
+            guard let self = self else {
+                return
+            }
+            
+            let result: Result<UIImage, Error>
+            
             if let error = error {
-                completion(.failure(error))
-                return
-            }
-
-            if let data = data,
-                let image = UIImage(data: data) {
-                self.cache[url] = image
+                result = .failure(error)
                 
-                if isLog {
-                    print("[ImageLoader] image from server (\(url.absoluteString))")
-                }
-                completion(.success(image))
-                return
+            } else if let data = data, let image = UIImage(data: data) {
+                self.cache[url] = image
+                self.logPrint("[ImageLoader] image from server (\(url.absoluteString))", isLog: isLog)
+                result = .success(image)
+                
+            } else {
+                let error = CustomError(message: "Invalid Image Data")
+                result = .failure(error)
             }
 
-            let error = CustomError(message: "Invalid Image Data")
-            completion(.failure(error))
+            self.handleResult(result, for: url)
         }
         executeQueue.addOperation(operation)
     }
     
     public func removeCache() {
         self.cache.removeAll()
+    }
+}
+
+// MARK: - Helper methods
+
+extension ImageLoader {
+    private func handleResult(_ result: Result<UIImage, Error>, for url: URL) {
+        if let handlers = pendingHandlers[url] {
+            pendingHandlers[url] = nil
+            handlers.forEach { $0(result) }
+        }
+    }
+    
+    private func logPrint(_ items: Any..., separator: String = " ", terminator: String = "\n", isLog: Bool) {
+        if isLog {
+            print(items, separator: separator, terminator: terminator)
+        }
     }
 }

@@ -23,7 +23,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     private func setupImageCache() {
         let taskQueue = OperationQueue()
-        taskQueue.maxConcurrentOperationCount = 1
+        taskQueue.maxConcurrentOperationCount = 3
         
         ImageLoader.shared.config(cache: Cache(config: .init(countLimit: 100, memoryLimit: 100 * 1024 * 1024, useLock: true)),
                                   executeQueue: taskQueue,
