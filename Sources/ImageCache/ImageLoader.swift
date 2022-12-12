@@ -104,6 +104,10 @@ extension ImageLoader {
         executeQueue.addOperation(operation)
     }
     
+    public func cancelAll() {
+        executeQueue.cancelAllOperations()
+    }
+    
     public func removeCache() {
         self.cache.removeAll()
     }

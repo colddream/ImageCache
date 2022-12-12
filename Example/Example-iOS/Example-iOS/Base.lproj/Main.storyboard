@@ -89,7 +89,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="n6J-mC-s2m" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2089.2307692307691" y="19.90521327014218"/>
+            <point key="canvasLocation" x="2869" y="20"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="alU-Nh-Qmq">
@@ -105,12 +105,42 @@
                         <autoresizingMask key="autoresizingMask"/>
                     </toolbar>
                     <connections>
-                        <segue destination="Ufb-OM-dBR" kind="relationship" relationship="rootViewController" id="U74-Vw-rMR"/>
+                        <segue destination="FPq-hy-zwD" kind="relationship" relationship="rootViewController" id="kip-Ol-0qs"/>
                     </connections>
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="9Tv-bq-4oe" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1160" y="19.90521327014218"/>
+        </scene>
+        <!--View Controller-->
+        <scene sceneID="307-G7-5TR">
+            <objects>
+                <viewController id="FPq-hy-zwD" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="XXU-Gy-Zcs">
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Mjx-XW-mqp">
+                                <rect key="frame" x="132.66666666666666" y="404.66666666666669" width="124.99999999999997" height="35"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Show movies"/>
+                                <connections>
+                                    <segue destination="Ufb-OM-dBR" kind="show" id="alc-cb-Nvi"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="ZVA-qg-5hB"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="Mjx-XW-mqp" firstAttribute="centerY" secondItem="XXU-Gy-Zcs" secondAttribute="centerY" id="Baa-Ke-dVN"/>
+                            <constraint firstItem="Mjx-XW-mqp" firstAttribute="centerX" secondItem="XXU-Gy-Zcs" secondAttribute="centerX" id="iVC-Ii-1dh"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="U6d-S8-vUW"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="yPL-Su-zEf" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2017" y="20"/>
         </scene>
     </scenes>
     <resources>

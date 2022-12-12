@@ -34,6 +34,10 @@ class MovieCollectionViewCell: UICollectionViewCell {
         }
     }
     
+    deinit {
+        print("Deinit MovieCollectionViewCell")
+    }
+    
     override func awakeFromNib() {
         super.awakeFromNib()
     }

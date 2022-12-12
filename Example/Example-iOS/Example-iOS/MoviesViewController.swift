@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import ImageCache
 
 class MoviesViewController: UIViewController {
     @IBOutlet weak var collectionView: UICollectionView!
@@ -18,9 +19,12 @@ class MoviesViewController: UIViewController {
         loadMovies()
     }
     
+    deinit {
+        print("Deinit MoviesViewController")
+        ImageLoader.shared.cancelAll()
+    }
+    
     @IBAction func pressTest(_ sender: Any) {
-        movies.removeAll()
-        collectionView.reloadData()
     }
 }
 
