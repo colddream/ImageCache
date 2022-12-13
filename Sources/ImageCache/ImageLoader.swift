@@ -20,6 +20,7 @@ public class ImageLoader: NSObject {
     private var receiveQueue: OperationQueue
     private var session: URLSession
     
+    private var loadingUrls: [URL: Bool] = [:]
     private var pendingHandlers: [URL: [ImageLoaderHandler]] = [:]
     
     // Init
@@ -55,8 +56,14 @@ extension ImageLoader {
         self.session = Self.regenerateSession(receiveQueue: receiveQueue)
     }
     
-    // Load image
+    /// Load image from cache (or from server)
+    /// - Parameters:
+    ///   - url: url to load image
+    ///   - keepOnlyLatestHandler: true => just keep the latest handler for pendingHandlers, otherwise keep all handlers
+    ///   - isLog: log or not
+    ///   - completion: handler
     public func loadImage(from url: URL,
+                          keepOnlyLatestHandler: Bool = false,
                           isLog: Bool = false,
                           completion: @escaping ImageLoaderHandler) {
         if let image = cache[url] {
@@ -65,19 +72,20 @@ extension ImageLoader {
             return
         }
         
-        // Add handler to pending handlers
-        if pendingHandlers[url] != nil {
-            pendingHandlers[url]?.append(completion)
-        } else {
-            pendingHandlers[url] = [completion]
-        }
-
-        // If pendingHandlers.count > 1 => mean we are loading this url before => just waiting it loading done
-        if pendingHandlers[url]!.count > 1 {
+        // Check if url is already loading
+        if loadingUrls[url] == true {
             logPrint("[ImageLoader] waiting previous loading image", isLog: isLog)
+            if keepOnlyLatestHandler {
+                pendingHandlers[url] = [completion]
+            } else {
+                let preHandlers = pendingHandlers[url] ?? []
+                pendingHandlers[url] = preHandlers + [completion]
+            }
             return
         }
         
+        loadingUrls[url] = true
+        pendingHandlers[url] = [completion]
         logPrint("[ImageLoader] Start get image from server (\(url.absoluteString))", isLog: isLog)
         let operation = DataTaskOperation(session: session, url: url) { [weak self] data, response, error in
             guard let self = self else {
@@ -104,10 +112,28 @@ extension ImageLoader {
         executeQueue.addOperation(operation)
     }
     
+    /// Remove all pending handlers that you don't want to notify to them anymore
+    /// - Parameters:
+    ///   - url: url to find pending handlers to remove
+    ///   - keepLatestHandler: should keep latest handler or not
+    public func removePendingHandlers(for url: URL, keepLatestHandler: Bool = false) {
+        if let handlers = self.pendingHandlers[url], handlers.count > 0 {
+            if keepLatestHandler {
+                self.pendingHandlers[url] = [handlers.last!]
+            } else {
+                self.pendingHandlers[url] = nil
+            }
+        }
+    }
+    
+    /// Cancel all operations
     public func cancelAll() {
+        pendingHandlers.removeAll()
+        loadingUrls.removeAll()
         executeQueue.cancelAllOperations()
     }
     
+    /// Remove all cache images
     public func removeCache() {
         self.cache.removeAll()
     }
@@ -121,6 +147,7 @@ extension ImageLoader {
             pendingHandlers[url] = nil
             handlers.forEach { $0(result) }
         }
+        loadingUrls[url] = nil
     }
     
     private func logPrint(_ items: Any..., separator: String = " ", terminator: String = "\n", isLog: Bool) {

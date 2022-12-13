@@ -59,9 +59,6 @@ extension MoviesViewController: UICollectionViewDataSource, UICollectionViewDele
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MovieCollectionViewCell", for: indexPath) as! MovieCollectionViewCell
-        
-        cell.movie = movies[indexPath.row]
-        
         return cell
     }
     
@@ -69,6 +66,21 @@ extension MoviesViewController: UICollectionViewDataSource, UICollectionViewDele
         let width = UIScreen.main.bounds.width/3 - 40
         let height = width * 1.5
         return CGSize(width: width, height: height)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        // print("willDisplay at \(indexPath)")
+        // Assign cell.movie = here to make sure the movie only assign when the cell is really display
+        // If assigning on the method cellForItemAt => movie will be assign even we didn't see it => cause loading a lot of image
+        (cell as! MovieCollectionViewCell).movie = movies[indexPath.row]
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        // print("didEndDisplaying at \(indexPath)")
+        let movie = movies[indexPath.row]
+        if let url = URL(string: movie.images.first ?? "") {
+            ImageLoader.shared.removePendingHandlers(for: url)
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
