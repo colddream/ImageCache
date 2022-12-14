@@ -34,7 +34,7 @@ final class ImageCacheTests: XCTestCase {
         
         var finishedCount = 0
         for urlString in imageUrls {
-            imageLoader.loadImage(from: URL(string: urlString)!, keepOnlyLatestHandler: false, isLog: true) { result, resultUrl in
+            imageLoader.loadValue(from: URL(string: urlString)!, keepOnlyLatestHandler: false, isLog: true) { result, resultUrl in
                 // print("Finished Load for: \(urlString)")
                 switch result {
                 case .success(let image):
