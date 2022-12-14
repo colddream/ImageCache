@@ -18,7 +18,7 @@ class MovieCollectionViewCell: UICollectionViewCell {
             thumbView.image = nil
             if let url = URL(string: movie?.images.first ?? "") {
                 print("[Movie Cell] Start load image")
-                ImageLoader.shared.loadImage(from: url, keepOnlyLatestHandler: true, isLog: true) { [weak self] result, resultUrl in
+                ImageLoader.shared.loadValue(from: url, keepOnlyLatestHandler: true, isLog: true) { [weak self] result, resultUrl in
                     guard let self = self else {
                         return
                     }
