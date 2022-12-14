@@ -8,7 +8,7 @@
 import UIKit
 import Cache
 
-public typealias ImageLoaderHandler = (Result<UIImage, Error>) -> Void
+public typealias ImageLoaderHandler = (Result<UIImage, Error>, URL) -> Void
 
 public class ImageLoader: NSObject {
     public static let shared = ImageLoader(cache: Cache<URL, UIImage>(config: .init(countLimit: 100, memoryLimit: 50 * 1024 * 1024)),
@@ -68,7 +68,7 @@ extension ImageLoader {
                           completion: @escaping ImageLoaderHandler) {
         if let image = cache[url] {
             logPrint("[ImageLoader] image from cache (\(url.absoluteString))", isLog: isLog)
-            completion(.success(image))
+            completion(.success(image), url)
             return
         }
         
@@ -145,7 +145,7 @@ extension ImageLoader {
     private func handleResult(_ result: Result<UIImage, Error>, for url: URL) {
         if let handlers = pendingHandlers[url] {
             pendingHandlers[url] = nil
-            handlers.forEach { $0(result) }
+            handlers.forEach { $0(result, url) }
         }
         loadingUrls[url] = nil
     }

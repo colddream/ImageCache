@@ -17,18 +17,28 @@ class MovieCollectionViewCell: UICollectionViewCell {
             titleLabel.text = movie?.title
             thumbView.image = nil
             if let url = URL(string: movie?.images.first ?? "") {
-                // print("[Movie Cell] Start load image")
-                ImageLoader.shared.loadImage(from: url, keepOnlyLatestHandler: true, isLog: false) { [weak self] result in
+                print("[Movie Cell] Start load image")
+                ImageLoader.shared.loadImage(from: url, keepOnlyLatestHandler: true, isLog: true) { [weak self] result, resultUrl in
                     guard let self = self else {
                         return
                     }
                     
                     switch result {
                     case let .success(image):
-                        // print("[Movie Cell] Finish load image: \(image) - \(self)")
-                        self.thumbView.image = image
+                        print("[Movie Cell] Finish load image: \(image) - \(self)")
+                        // Because for tableviewcell or collectionviewcell: we are reusing cell, so sometimes the callback's result will NOT be belong to this cell anymore
+                        // ===> This checking to make sure this callback's result is belong to this current cell
+                        if resultUrl.absoluteString == self.movie?.images.first {
+                            self.thumbView.image = image
+                        } else {
+                            print("[Movie Cell] Ignore because different url")
+                        }
                     case .failure:
-                        self.thumbView.image = nil
+                        if resultUrl.absoluteString == self.movie?.images.first {
+                            self.thumbView.image = nil
+                        } else {
+                            print("[Movie Cell] Ignore because different url (error)")
+                        }
                     }
                 }
             }
