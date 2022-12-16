@@ -14,9 +14,7 @@ public class OptimizedImageLoader: BaseLoader<UIImage> {
                                            receiveQueue: .main)
     
     public override func value(from data: Data) -> UIImage? {
-        let image = UIImage(data: data)
-        // let optimized = image?.decodedImage()
-        return image
+        return UIImage(data: data)
     }
     
     private static func defaultExecuteQueue() -> OperationQueue {
