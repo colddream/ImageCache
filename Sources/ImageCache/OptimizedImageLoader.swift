@@ -8,13 +8,15 @@
 import UIKit
 import Cache
 
-public class OptimizedImageLoader: BaseLoader<UIImage> {
-    public static let shared = ImageLoader(cache: Cache<URL, UIImage>(config: .init(countLimit: 50, memoryLimit: 50 * 1024 * 1024)),
-                                           executeQueue: OptimizedImageLoader.defaultExecuteQueue(),
-                                           receiveQueue: .main)
+public class OptimizedImageLoader: BaseLoader<String, UIImage> {
+    public static let shared = OptimizedImageLoader(cache: Cache<String, UIImage>(config: .init(countLimit: 50, memoryLimit: 50 * 1024 * 1024)),
+                                                    executeQueue: OptimizedImageLoader.defaultExecuteQueue(),
+                                                    receiveQueue: .main)
     
     public override func value(from data: Data) -> UIImage? {
-        return UIImage(data: data)
+        let image = ImageIOHelper.downsample(imageFrom: data, to: CGSize(width: 90, height: 120))
+        // let image = UIImage(data: data)
+        return image
     }
     
     private static func defaultExecuteQueue() -> OperationQueue {

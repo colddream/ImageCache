@@ -17,7 +17,7 @@ public class ImageCache {
     private let config: Config
     
     public init(config: Config) {
-        let cache = Cache<URL, UIImage>(config: config.cacheConfig)
+        let cache = Cache<String, UIImage>(config: config.cacheConfig)
         let executeQueue = OperationQueue()
         executeQueue.maxConcurrentOperationCount = config.maxConcurrentCount
         self.loader = OptimizedImageLoader(cache: cache, executeQueue: executeQueue, receiveQueue: .main)
@@ -25,7 +25,7 @@ public class ImageCache {
     }
     
     public func setup(config: Config) {
-        let cache = Cache<URL, UIImage>(config: config.cacheConfig)
+        let cache = Cache<String, UIImage>(config: config.cacheConfig)
         let executeQueue = OperationQueue()
         executeQueue.maxConcurrentOperationCount = config.maxConcurrentCount
         self.loader.config(cache: cache, executeQueue: executeQueue)
@@ -34,11 +34,20 @@ public class ImageCache {
 
 // MARK: - public methods
 extension ImageCache {
+    /// Load image from url
+    /// - Parameters:
+    ///   - url: url to load
+    ///   - preferredSize: preferred size for image (ussually UIImageView's size)
+    ///   - keepOnlyLatestHandler: true => just keep the latest handler for pendingHandlers, otherwise keep all handlers
+    ///   - isLog: log or not
+    ///   - completion: handler
     public func loadImage(from url: URL,
+                          preferredSize: CGSize? = nil,
                           keepOnlyLatestHandler: Bool = false,
                           isLog: Bool = false,
                           completion: @escaping Handler) {
-        loader.loadValue(from: url, keepOnlyLatestHandler: keepOnlyLatestHandler, isLog: isLog) { result, resultUrl in
+        let key = self.key(from: url, preferredSize: preferredSize)
+        loader.loadValue(from: url, keepOnlyLatestHandler: keepOnlyLatestHandler, isLog: isLog, keyGenerator: { key }) { result, resultUrl in
             switch result {
             case let .success(value):
                 completion(.success(value), resultUrl)
@@ -48,8 +57,14 @@ extension ImageCache {
         }
     }
     
-    public func cacheImage(for url: URL) -> UIImage? {
-        return loader.cacheValue(for: url)
+    /// Get cache image
+    /// - Parameter url: url to get
+    ///     - preferredSize: preferred size for image (ussually UIImageView's size)
+    /// - Returns: image
+    public func cacheImage(for url: URL,
+                           preferredSize: CGSize? = nil) -> UIImage? {
+        let key = self.key(from: url, preferredSize: preferredSize)
+        return loader.cacheValue(for: key)
     }
     
     /// Remove all pending handlers that you don't want to notify to them anymore
@@ -65,6 +80,12 @@ extension ImageCache {
     /// Remove all cache values
     public func removeCache() {
         loader.removeCache()
+    }
+    
+    /// Key generate from url and preferredSize
+    private func key(from url: URL, preferredSize: CGSize? = nil) -> String {
+        let sizeString = preferredSize.map { "\($0)" }
+        return [url.absoluteString, sizeString].compactMap { $0 }.joined(separator: "_")
     }
 }
 
@@ -85,8 +106,8 @@ public extension ImageCache {
             self.maxConcurrentCount = 6
         }
         
-        var cacheConfig: Cache<URL, UIImage>.Config {
-            let config = Cache<URL, UIImage>.Config(countLimit: countLimit, memoryLimit: memoryLimit, showLog: showLog)
+        var cacheConfig: Cache<String, UIImage>.Config {
+            let config = Cache<String, UIImage>.Config(countLimit: countLimit, memoryLimit: memoryLimit, showLog: showLog)
             return config
         }
     }
