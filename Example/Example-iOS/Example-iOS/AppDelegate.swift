@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import Cache
 import ImageCache
 
 @main
@@ -22,11 +21,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     private func setupImageCache() {
-        let taskQueue = OperationQueue()
-        taskQueue.maxConcurrentOperationCount = 3
-        
-        ImageLoader.shared.config(cache: Cache(config: .init(countLimit: 100, memoryLimit: 100 * 1024 * 1024, useLock: true)),
-                                  executeQueue: taskQueue,
-                                  receiveQueue: .main)
+        ImageCache.shared.setup(config: .init(countLimit: 100, memoryLimit: 100 * 1024 * 1024))
     }
 }

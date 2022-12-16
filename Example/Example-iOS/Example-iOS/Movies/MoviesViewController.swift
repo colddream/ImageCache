@@ -21,7 +21,7 @@ class MoviesViewController: UIViewController {
     
     deinit {
         print("Deinit MoviesViewController")
-        ImageLoader.shared.cancelAll()
+        ImageCache.shared.cancelAll()
     }
     
     @IBAction func pressTest(_ sender: Any) {
@@ -81,7 +81,7 @@ extension MoviesViewController: UICollectionViewDataSource, UICollectionViewDele
         if let url = URL(string: movie.images.first ?? "") {
             // When this cell is disappear => we should remove the pending handlers of the url of this cell to make sure the ImageLoader does NOT notify to the old pending handlers
             // We should only do this removing if each cell's url of the listview (tableview/collectionview) is unique
-            ImageLoader.shared.removePendingHandlers(for: url)
+            ImageCache.shared.removePendingHandlers(for: url)
         }
     }
     

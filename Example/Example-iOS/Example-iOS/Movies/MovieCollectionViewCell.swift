@@ -17,8 +17,15 @@ class MovieCollectionViewCell: UICollectionViewCell {
             titleLabel.text = movie?.title
             thumbView.image = nil
             if let url = URL(string: movie?.images.first ?? "") {
+                // This is for demo purpose because the function ImageLoader.shared.loadValue itself will return cache image if exist
+                if let image = ImageCache.shared.cacheImage(for: url) {
+                    print("[Movie Cell] Get from cache directly")
+                    thumbView.image = image
+                    return
+                }
+                
                 print("[Movie Cell] Start load image")
-                ImageLoader.shared.loadValue(from: url, keepOnlyLatestHandler: true, isLog: true) { [weak self] result, resultUrl in
+                ImageCache.shared.loadImage(from: url, keepOnlyLatestHandler: true, isLog: true) { [weak self] result, resultUrl in
                     guard let self = self else {
                         return
                     }
