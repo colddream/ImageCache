@@ -26,6 +26,11 @@ class MoviesViewController: UIViewController {
     
     @IBAction func pressTest(_ sender: Any) {
     }
+    
+    override func didReceiveMemoryWarning() {
+        ImageCache.shared.removeCache()
+        super.didReceiveMemoryWarning()
+    }
 }
 
 // MARK: - Helper methods
