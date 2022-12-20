@@ -10,25 +10,46 @@ import Cache
 
 public class ImageCache {
     public typealias Handler = (Result<UIImage, Error>, URL) -> Void
-    
-    public static let shared = ImageCache(config: .init(countLimit: 50, memoryLimit: 50 * 1024 * 1024))
+    public static let shared = try! ImageCache(config: .init(type: .memory(.init(countLimit: 100, totalCostLimit: 100 * 1024 * 1024)), clearCacheType: .memoryOnly))
     
     private let loader: OptimizedImageLoader
     private let config: Config
     
-    public init(config: Config) {
-        let cache = Cache<String, UIImage>(config: config.cacheConfig)
+    public init(config: Config) throws {
+        let cache = try Self.createCache(from: config)
         let executeQueue = OperationQueue()
         executeQueue.maxConcurrentOperationCount = config.maxConcurrentCount
-        self.loader = OptimizedImageLoader(cache: cache, executeQueue: executeQueue, receiveQueue: .main)
+        self.loader = OptimizedImageLoader(cache: cache,
+                                           config: .init(showLog: config.showLog, keepOnlyLatestHandler: config.keepOnlyLatestHandler),
+                                           executeQueue: executeQueue)
         self.config = config
     }
     
-    public func setup(config: Config) {
-        let cache = Cache<String, UIImage>(config: config.cacheConfig)
+    public func setup(config: Config) throws {
+        let cache = try Self.createCache(from: config)
         let executeQueue = OperationQueue()
         executeQueue.maxConcurrentOperationCount = config.maxConcurrentCount
-        self.loader.config(cache: cache, executeQueue: executeQueue)
+        self.loader.config(cache: cache,
+                           config: .init(showLog: config.showLog, keepOnlyLatestHandler: config.keepOnlyLatestHandler),
+                           executeQueue: executeQueue)
+    }
+    
+    private static func createCache(from config: Config) throws -> any Cacheable<String, UIImage> {
+        let cache: any Cacheable<String, UIImage>
+        
+        switch config.type {
+        case let .memory(config):
+            cache = MemoryStorage(config: config)
+        case let .disk(config):
+            cache = try DiskStorage(config: config)
+        case let .both(memoryConfig, diskConfig):
+            let memory = MemoryStorage(config: memoryConfig)
+            let disk = try DiskStorage(config: diskConfig)
+            cache = Cache<UIImage>(type: .storages(memory: memory, disk: disk),
+                                   config: .init(clearCacheType: config.clearCacheType, showLog: config.showLog))
+        }
+        
+        return cache
     }
 }
 
@@ -43,11 +64,9 @@ extension ImageCache {
     ///   - completion: handler
     public func loadImage(from url: URL,
                           preferredSize: CGSize? = nil,
-                          keepOnlyLatestHandler: Bool = false,
-                          isLog: Bool = false,
                           completion: @escaping Handler) {
         let key = self.key(from: url, preferredSize: preferredSize)
-        loader.loadValue(from: url, keepOnlyLatestHandler: keepOnlyLatestHandler, isLog: isLog, keyGenerator: { key }) { result, resultUrl in
+        loader.loadValue(from: url, key: key) { result, resultUrl in
             switch result {
             case let .success(value):
                 completion(.success(value), resultUrl)
@@ -61,10 +80,9 @@ extension ImageCache {
     /// - Parameter url: url to get
     ///     - preferredSize: preferred size for image (ussually UIImageView's size)
     /// - Returns: image
-    public func cacheImage(for url: URL,
-                           preferredSize: CGSize? = nil) -> UIImage? {
+    public func cacheImage(for url: URL, preferredSize: CGSize? = nil) throws -> UIImage? {
         let key = self.key(from: url, preferredSize: preferredSize)
-        return loader.cacheValue(for: key)
+        return try loader.cacheValue(for: key)
     }
     
     /// Remove all pending handlers that you don't want to notify to them anymore
@@ -78,8 +96,8 @@ extension ImageCache {
     }
     
     /// Remove all cache values
-    public func removeCache() {
-        loader.removeCache()
+    public func removeCache() throws {
+        try loader.removeCache()
     }
     
     /// Key generate from url and preferredSize
@@ -92,23 +110,36 @@ extension ImageCache {
 
 // MARK: - Define config
 
-public extension ImageCache {
-    struct Config {
-        let countLimit: Int     // limit number of cache items
-        let memoryLimit: Int    // limit memory cache in bytes (100 * 1024 * 1024 = 100MB)
-        let showLog: Bool       // To show log or not
-        let maxConcurrentCount: Int
-        
-        public init(countLimit: Int, memoryLimit: Int, showLog: Bool = false, maxConcurrentCount: Int = 6) {
-            self.countLimit = countLimit
-            self.memoryLimit = memoryLimit
-            self.showLog = showLog
-            self.maxConcurrentCount = 6
+extension ImageCache {
+    public struct Config {
+        public enum CacheType {
+            case memory(MemoryStorage<String, UIImage>.Config)
+            case disk(DiskStorage<UIImage>.Config)
+            case both(memory: MemoryStorage<String, UIImage>.Config, disk: DiskStorage<UIImage>.Config)
         }
         
-        var cacheConfig: Cache<String, UIImage>.Config {
-            let config = Cache<String, UIImage>.Config(countLimit: countLimit, memoryLimit: memoryLimit, showLog: showLog)
-            return config
+        // Cache Type
+        let type: CacheType
+        
+        // Clear cache type
+        let clearCacheType: Cache<UIImage>.Config.ClearCacheType
+        
+        // Show log
+        let showLog: Bool
+        
+        // max concurrent count for executeQueue
+        let maxConcurrentCount: Int
+        
+        // keep only lastest handler
+        let keepOnlyLatestHandler: Bool
+        
+        public init(type: CacheType, clearCacheType: Cache<UIImage>.Config.ClearCacheType,
+             showLog: Bool = false, maxConcurrentCount: Int = 6, keepOnlyLatestHandler: Bool = false) {
+            self.type = type
+            self.clearCacheType = clearCacheType
+            self.showLog = showLog
+            self.maxConcurrentCount = maxConcurrentCount
+            self.keepOnlyLatestHandler = keepOnlyLatestHandler
         }
     }
 }

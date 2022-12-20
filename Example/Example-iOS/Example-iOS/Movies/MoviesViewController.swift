@@ -28,7 +28,7 @@ class MoviesViewController: UIViewController {
     }
     
     override func didReceiveMemoryWarning() {
-        ImageCache.shared.removeCache()
+        try? ImageCache.shared.removeCache()
         super.didReceiveMemoryWarning()
     }
 }

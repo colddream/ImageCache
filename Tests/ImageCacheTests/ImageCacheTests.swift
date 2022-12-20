@@ -6,13 +6,17 @@ final class ImageCacheTests: XCTestCase {
     
     override func setUpWithError() throws {
         imageCache = ImageCache.shared
-        imageCache.setup(config: .init(countLimit: 100, memoryLimit: 100 * 1024 * 1024, showLog: false, maxConcurrentCount: 5))
+        try imageCache.setup(config: .init(type: .both(memory: .init(countLimit: 100, totalCostLimit: 100 * 1024 * 1024),
+                                                   disk: .init(name: "ImageCacheTests_ImageCache", sizeLimit: 0)),
+                                       clearCacheType: .both))
     }
     
     override func tearDownWithError() throws {
+        try imageCache.removeCache()
         imageCache = nil
     }
 }
+
 
 // MARK: - Cache
 
@@ -85,7 +89,7 @@ extension ImageCacheTests {
     private func loadImages(imageUrls: [String], completion: @escaping () -> Void) {
         var finishedCount = 0
         for urlString in imageUrls {
-            imageCache.loadImage(from: URL(string: urlString)!, keepOnlyLatestHandler: false, isLog: true) { result, resultUrl in
+            imageCache.loadImage(from: URL(string: urlString)!) { result, resultUrl in
                 print("Finished Load for: \(urlString)")
                 switch result {
                 case .success(let image):

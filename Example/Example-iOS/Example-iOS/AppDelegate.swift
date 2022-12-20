@@ -21,6 +21,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     private func setupImageCache() {
-        ImageCache.shared.setup(config: .init(countLimit: 100, memoryLimit: 100 * 1024 * 1024))
+        try! ImageCache.shared.setup(config: .init(type: .both(memory: .init(countLimit: 100, totalCostLimit: 100 * 1024 * 1024),
+                                                          disk: .init(name: "ImageCache.PreSetup", sizeLimit: 0)),
+                                                   clearCacheType: .memoryOnly,
+                                                   showLog: true))
     }
 }
