@@ -20,7 +20,7 @@ class MoviesViewController: UIViewController {
     }
     
     deinit {
-        print("Deinit MoviesViewController")
+        print("Deinit from MoviesViewController")
         ImageCache.shared.cancelAll()
     }
     
@@ -28,6 +28,7 @@ class MoviesViewController: UIViewController {
     }
     
     override func didReceiveMemoryWarning() {
+        print("didReceiveMemoryWarning from MoviesViewController")
         try? ImageCache.shared.removeCache()
         super.didReceiveMemoryWarning()
     }

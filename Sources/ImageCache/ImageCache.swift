@@ -13,24 +13,25 @@ public class ImageCache {
     public static let shared = try! ImageCache(config: .init(type: .memory(.init(countLimit: 100, totalCostLimit: 100 * 1024 * 1024)), clearCacheType: .memoryOnly))
     
     private let loader: OptimizedImageLoader
-    private let config: Config
+    private var config: Config
     
     public init(config: Config) throws {
         let cache = try Self.createCache(from: config)
         let executeQueue = OperationQueue()
         executeQueue.maxConcurrentOperationCount = config.maxConcurrentCount
         self.loader = OptimizedImageLoader(cache: cache,
-                                           config: .init(showLog: config.showLog, keepOnlyLatestHandler: config.keepOnlyLatestHandler),
+                                           config: .init(showLog: config.showLog, keepOnlyLatestHandler: config.keepOnlyLatestHandler, useOriginalData: config.useOriginalData),
                                            executeQueue: executeQueue)
         self.config = config
     }
     
     public func setup(config: Config) throws {
+        self.config = config
         let cache = try Self.createCache(from: config)
         let executeQueue = OperationQueue()
         executeQueue.maxConcurrentOperationCount = config.maxConcurrentCount
         self.loader.config(cache: cache,
-                           config: .init(showLog: config.showLog, keepOnlyLatestHandler: config.keepOnlyLatestHandler),
+                           config: .init(showLog: config.showLog, keepOnlyLatestHandler: config.keepOnlyLatestHandler, useOriginalData: config.useOriginalData),
                            executeQueue: executeQueue)
     }
     
@@ -66,14 +67,21 @@ extension ImageCache {
                           preferredSize: CGSize? = nil,
                           completion: @escaping Handler) {
         let key = self.key(from: url, preferredSize: preferredSize)
-        loader.loadValue(from: url, key: key) { result, resultUrl in
+        
+        loader.loadValue(from: url, key: key, dataTransformHanler: { [weak self] data in
+            if self?.config.useDownsampleImage == true,
+                let size = preferredSize {
+                return ImageIOHelper.downsample(imageFrom: data, to: size)
+            }
+            return nil
+        }, completion: { result, resultUrl in
             switch result {
             case let .success(value):
                 completion(.success(value), resultUrl)
             case let .failure(error):
                 completion(.failure(error), resultUrl)
             }
-        }
+        })
     }
     
     /// Get cache image
@@ -133,13 +141,23 @@ extension ImageCache {
         // keep only lastest handler
         let keepOnlyLatestHandler: Bool
         
+        // Use original data for set cache value
+        let useOriginalData: Bool
+        
+        // Use downsample image (https://swiftsenpai.com/development/reduce-uiimage-memory-footprint/)
+        let useDownsampleImage: Bool
+        
         public init(type: CacheType, clearCacheType: Cache<UIImage>.Config.ClearCacheType,
-             showLog: Bool = false, maxConcurrentCount: Int = 6, keepOnlyLatestHandler: Bool = false) {
+                    showLog: Bool = false, maxConcurrentCount: Int = 6,
+                    keepOnlyLatestHandler: Bool = false, useOriginalData: Bool = false,
+                    useDownsampleImage: Bool = false) {
             self.type = type
             self.clearCacheType = clearCacheType
             self.showLog = showLog
             self.maxConcurrentCount = maxConcurrentCount
             self.keepOnlyLatestHandler = keepOnlyLatestHandler
+            self.useOriginalData = useOriginalData
+            self.useDownsampleImage = useDownsampleImage
         }
     }
 }
