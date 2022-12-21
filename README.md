@@ -22,11 +22,13 @@ To install using Swift Package Manage, add this to the `dependencies:` section i
 You can create an instance of **ImageLoader** as follows:
 
 ```swift
-let imageLoader = ImageLoader(cache: ImageCache())
+let imageCache = try ImageCache(config: .init(type: .both(memory: .init(countLimit: 100, totalCostLimit: 100 * 1024 * 1024),
+                                                          disk: .init(name: "ImageCacheTests_ImageCache", sizeLimit: 0)),
+                                              clearCacheType: .both))
 ```
 
 ```swift
-imageLoader.loadImage(from: URL(string: urlString)!) { result in
+imageCache.loadImage(from: URL(string: urlString)!) { result, resultUrl in
     print("Finished Load for: \(urlString)")
     switch result {
     case .success(let image):
