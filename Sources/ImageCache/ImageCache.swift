@@ -112,7 +112,7 @@ extension ImageCache {
     
     /// Key generate from url and preferredSize
     private func key(from url: URL, preferredSize: CGSize? = nil) -> String {
-        let sizeString = preferredSize.map { "\($0)" }
+        let sizeString = preferredSize.map { "\(Int($0.width))x\(Int($0.height))" }
         return [url.absoluteString, sizeString].compactMap { $0 }.joined(separator: "_")
     }
 }
