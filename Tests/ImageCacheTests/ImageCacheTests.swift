@@ -88,7 +88,7 @@ extension ImageCacheTests {
     private func loadImages(imageUrls: [String], completion: @escaping () -> Void) {
         var finishedCount = 0
         for urlString in imageUrls {
-            imageCache.loadImage(from: URL(string: urlString)!, preferredSize: CGSize(width: 139.4738648736, height: 217.2737489)) { result, resultUrl in
+            imageCache.loadImage(from: URL(string: urlString)!, preferredSize: CGSize(width: 139.499999, height: 217.5)) { result, resultUrl in
                 print("Finished Load for: \(urlString)")
                 switch result {
                 case .success(let image):
