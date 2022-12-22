@@ -59,16 +59,18 @@ extension ImageCache {
     /// Load image from url
     /// - Parameters:
     ///   - url: url to load
+    ///   - key: this is optional key, if NOT-nil => we force use this key, otherwise will use generated-key inside the method based on url and preferredSize
     ///   - preferredSize: preferred size for image (ussually UIImageView's size)
     ///   - keepOnlyLatestHandler: true => just keep the latest handler for pendingHandlers, otherwise keep all handlers
     ///   - isLog: log or not
     ///   - completion: handler
     public func loadImage(from url: URL,
+                          key: String? = nil,
                           preferredSize: CGSize? = nil,
                           completion: @escaping Handler) {
-        let key = self.key(from: url, preferredSize: preferredSize)
+        let finalKey = key ?? self.key(from: url, preferredSize: preferredSize)
         
-        loader.loadValue(from: url, key: key, dataTransformHanler: { [weak self] data in
+        loader.loadValue(from: url, key: finalKey, dataTransformHanler: { [weak self] data in
             if self?.config.useDownsampleImage == true,
                 let size = preferredSize {
                 return ImageIOHelper.downsample(imageFrom: data, to: size)
