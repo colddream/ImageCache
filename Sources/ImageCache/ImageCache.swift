@@ -92,6 +92,13 @@ extension ImageCache {
     /// - Returns: image
     public func cacheImage(for url: URL, preferredSize: CGSize? = nil) throws -> UIImage? {
         let key = self.key(from: url, preferredSize: preferredSize)
+        return try cacheImage(for: key)
+    }
+    
+    /// Get cache image
+    /// - Parameter key: key to get cache
+    /// - Returns: image
+    public func cacheImage(for key: String) throws -> UIImage? {
         return try loader.cacheValue(for: key)
     }
     
