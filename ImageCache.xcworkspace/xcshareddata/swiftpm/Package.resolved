@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/colddream/Cache",
       "state" : {
-        "branch" : "main",
-        "revision" : "b3f723dc8fe7d692967cfddade1d841bd578a95d"
+        "revision" : "b3f723dc8fe7d692967cfddade1d841bd578a95d",
+        "version" : "1.0.0"
       }
     }
   ],
